@@ -33,7 +33,6 @@ CCSpriteFrameCacheHelper.cpp \
 CCTransformHelp.cpp \
 CCUtilMath.cpp \
 CCComAttribute.cpp \
-CCComAudio.cpp \
 CCComController.cpp \
 CCComRender.cpp \
 CCInputDelegate.cpp \
@@ -44,13 +43,13 @@ TriggerBase.cpp \
 TriggerMng.cpp \
 TriggerObj.cpp \
 CocoLoader.cpp \
+WidgetReader/ArmatureNodeReader/ArmatureNodeReader.cpp \
 WidgetReader/NodeReader/NodeReader.cpp \
 WidgetReader/SingleNodeReader/SingleNodeReader.cpp \
 WidgetReader/SpriteReader/SpriteReader.cpp \
 WidgetReader/ParticleReader/ParticleReader.cpp \
 WidgetReader/GameMapReader/GameMapReader.cpp \
 WidgetReader/ProjectNodeReader/ProjectNodeReader.cpp \
-WidgetReader/ComAudioReader/ComAudioReader.cpp \
 WidgetReader/WidgetReader.cpp \
 WidgetReader/ButtonReader/ButtonReader.cpp \
 WidgetReader/CheckBoxReader/CheckBoxReader.cpp \
@@ -65,19 +64,22 @@ WidgetReader/TextAtlasReader/TextAtlasReader.cpp \
 WidgetReader/TextBMFontReader/TextBMFontReader.cpp \
 WidgetReader/TextFieldReader/TextFieldReader.cpp \
 WidgetReader/TextReader/TextReader.cpp \
-ActionTimeline/CCNodeReader.cpp \
 ActionTimeline/CCActionTimelineCache.cpp \
 ActionTimeline/CCFrame.cpp \
 ActionTimeline/CCTimeLine.cpp \
 ActionTimeline/CCActionTimeline.cpp \
 ActionTimeline/CSLoader.cpp \
+ActionTimeline/CCActionTimelineNode.cpp \
+ActionTimeline/CCNodeReader.cpp \
 FlatBuffersSerialize.cpp \
+CCObjectExtensionData.cpp \
 WidgetCallBackHandlerProtocol.cpp
 endif
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/..
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/.. \
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../ \
+                    $(LOCAL_PATH)/../../../external/tinyxml2 \
                     $(LOCAL_PATH)/WidgetReader
 
 LOCAL_CFLAGS += -fexceptions

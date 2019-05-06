@@ -522,7 +522,7 @@ static int tolua_cocos2dx_extra_luabinding_Native_getOpenUDID00(lua_State* tolua
  {
   {
    string tolua_ret = (string)  Native::getOpenUDID();
-   tolua_pushcppstring(tolua_S,(const char*)tolua_ret);
+   tolua_pushcppstring(tolua_S, tolua_ret);
   }
  }
  return 1;
@@ -585,7 +585,7 @@ static int tolua_cocos2dx_extra_luabinding_Native_getInputText00(lua_State* tolu
   const char* defaultValue = ((const char*)  tolua_tostring(tolua_S,4,0));
   {
    string tolua_ret = (string)  Native::getInputText(title,message,defaultValue);
-   tolua_pushcppstring(tolua_S,(const char*)tolua_ret);
+   tolua_pushcppstring(tolua_S, tolua_ret);
   }
  }
  return 1;
@@ -613,7 +613,7 @@ static int tolua_cocos2dx_extra_luabinding_Native_getDeviceName00(lua_State* tol
  {
   {
    const string tolua_ret = (const string)  Native::getDeviceName();
-   tolua_pushcppstring(tolua_S,(const char*)tolua_ret);
+   tolua_pushcppstring(tolua_S, tolua_ret);
   }
  }
  return 1;
@@ -739,7 +739,7 @@ static int tolua_cocos2dx_extra_luabinding_HTTPRequest_getRequestUrl00(lua_State
 #endif
   {
    string tolua_ret = (string)  self->getRequestUrl();
-   tolua_pushcppstring(tolua_S,(const char*)tolua_ret);
+   tolua_pushcppstring(tolua_S, tolua_ret);
   }
  }
  return 1;
@@ -979,7 +979,7 @@ static int tolua_cocos2dx_extra_luabinding_HTTPRequest_getCookieString00(lua_Sta
 #endif
   {
    string tolua_ret = (string)  self->getCookieString();
-   tolua_pushcppstring(tolua_S,(const char*)tolua_ret);
+   tolua_pushcppstring(tolua_S, tolua_ret);
   }
  }
  return 1;
@@ -1204,7 +1204,7 @@ static int tolua_cocos2dx_extra_luabinding_HTTPRequest_getResponseHeadersString0
 #endif
   {
    string tolua_ret = (string)  self->getResponseHeadersString();
-   tolua_pushcppstring(tolua_S,(const char*)tolua_ret);
+   tolua_pushcppstring(tolua_S, tolua_ret);
   }
  }
  return 1;
@@ -1236,7 +1236,7 @@ static int tolua_cocos2dx_extra_luabinding_HTTPRequest_getResponseString00(lua_S
 #endif
   {
    string tolua_ret = (string)  self->getResponseString();
-   tolua_pushcppstring(tolua_S,(const char*)tolua_ret);
+   tolua_pushcppstring(tolua_S, tolua_ret);
   }
  }
  return 1;
@@ -1398,7 +1398,7 @@ static int tolua_cocos2dx_extra_luabinding_HTTPRequest_getErrorMessage00(lua_Sta
 #endif
   {
    string tolua_ret = (string)  self->getErrorMessage();
-   tolua_pushcppstring(tolua_S,(const char*)tolua_ret);
+   tolua_pushcppstring(tolua_S, tolua_ret);
   }
  }
  return 1;
@@ -1593,6 +1593,8 @@ TOLUA_API int tolua_cocos2dx_extra_luabinding_open (lua_State* tolua_S)
   tolua_endmodule(tolua_S);
   tolua_constant(tolua_S,"kCCHTTPRequestMethodGET",kCCHTTPRequestMethodGET);
   tolua_constant(tolua_S,"kCCHTTPRequestMethodPOST",kCCHTTPRequestMethodPOST);
+  tolua_constant(tolua_S,"kCCHTTPRequestMethodPUT",kCCHTTPRequestMethodPUT);
+  tolua_constant(tolua_S,"kCCHTTPRequestMethodDELETE",kCCHTTPRequestMethodDELETE);
   tolua_constant(tolua_S,"kCCHTTPRequestAcceptEncodingIdentity",kCCHTTPRequestAcceptEncodingIdentity);
   tolua_constant(tolua_S,"kCCHTTPRequestAcceptEncodingGzip",kCCHTTPRequestAcceptEncodingGzip);
   tolua_constant(tolua_S,"kCCHTTPRequestAcceptEncodingDeflate",kCCHTTPRequestAcceptEncodingDeflate);
@@ -1629,7 +1631,7 @@ TOLUA_API int tolua_cocos2dx_extra_luabinding_open (lua_State* tolua_S)
    tolua_function(tolua_S,"getErrorCode",tolua_cocos2dx_extra_luabinding_HTTPRequest_getErrorCode00);
    tolua_function(tolua_S,"getErrorMessage",tolua_cocos2dx_extra_luabinding_HTTPRequest_getErrorMessage00);
   tolua_endmodule(tolua_S);
-#endif // (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID || CC_USE_CURL)
+#endif // #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID || CC_USE_CURL)
   tolua_constant(tolua_S,"kCCNetworkStatusNotReachable",kCCNetworkStatusNotReachable);
   tolua_constant(tolua_S,"kCCNetworkStatusReachableViaWiFi",kCCNetworkStatusReachableViaWiFi);
   tolua_constant(tolua_S,"kCCNetworkStatusReachableViaWWAN",kCCNetworkStatusReachableViaWWAN);

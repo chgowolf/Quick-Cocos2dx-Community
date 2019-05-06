@@ -10,17 +10,12 @@
 #include "CCLuaEngine.h"
 #endif
 
-#ifdef _WINDOWS_
-#include <Windows.h>
-#else
-#include <pthread.h>
-#endif
-
 #include <stdio.h>
 #include <vector>
 #include <map>
 #include <string>
-#if CC_TARGET_PLATFORM != CC_PLATFORM_ANDROID
+
+#if (CC_USE_CURL)
 #include "curl/curl.h"
 #endif
 
@@ -31,6 +26,8 @@ NS_CC_EXTRA_BEGIN
 
 #define kCCHTTPRequestMethodGET                 0
 #define kCCHTTPRequestMethodPOST                1
+#define kCCHTTPRequestMethodPUT                 2
+#define kCCHTTPRequestMethodDELETE              3
 
 #define kCCHTTPRequestAcceptEncodingIdentity    0
 #define kCCHTTPRequestAcceptEncodingGzip        1
@@ -152,7 +149,7 @@ private:
     , m_curlState(kCCHTTPRequestCURLStateIdle)
     , m_postData(NULL)
     , m_postDataLen(0)
-#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+#if (!CC_USE_CURL)
     , m_httpConnect(NULL)
     , m_cookies(NULL)
     , m_nTimeOut(0)
@@ -173,7 +170,10 @@ private:
     bool initWithUrl(const char *url, int method);
 
     enum {
-        DEFAULT_TIMEOUT = 10, // 10 seconds
+        // how long to wait to make a successful connection to the server before starting to buffer the output
+        DEFAULT_CONNECTTIMEOUT = 10, // seconds
+        // how long to wait to receive a completely buffered output from the server
+        DEFAULT_TIMEOUT = 30, // seconds
         BUFFER_CHUNK_SIZE = 32768, // 32 KB
     };
 
@@ -183,7 +183,7 @@ private:
     int m_listener;
     int m_curlState;
 
-#if CC_TARGET_PLATFORM != CC_PLATFORM_ANDROID
+#if (CC_USE_CURL)
     CURL *m_curl;
 	curl_httppost *m_formPost;
 	curl_httppost *m_lastPost;
@@ -201,7 +201,7 @@ private:
     void* m_postData;
     size_t m_postDataLen;
 
-#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+#if (!CC_USE_CURL)
     jobject m_httpConnect;
     const char* m_httpMethod;
     Fields m_postFile;
@@ -244,8 +244,7 @@ private:
     static size_t writeHeaderCURL(void *buffer, size_t size, size_t nmemb, void *userdata);
     static int progressCURL(void *userdata, double dltotal, double dlnow, double ultotal, double ulnow);
 
-#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
-
+#if (!CC_USE_CURL)
     pthread_attr_t m_threadAttr;
 
     bool isNeedBoundary();

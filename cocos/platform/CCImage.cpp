@@ -457,7 +457,7 @@ Image::Image()
 , _width(0)
 , _height(0)
 , _unpack(false)
-, _fileType(Format::UNKOWN)
+, _fileType(Format::UNKNOWN)
 , _renderFormat(Texture2D::PixelFormat::NONE)
 , _numberOfMipmaps(0)
 , _hasPremultipliedAlpha(true)
@@ -472,8 +472,7 @@ Image::~Image()
         for (int i = 0; i < _numberOfMipmaps; ++i)
             CC_SAFE_DELETE_ARRAY(_mipmaps[i].address);
     }
-    else
-        CC_SAFE_FREE(_data);
+    CC_SAFE_FREE(_data);
 }
 
 bool Image::initWithImageFile(const std::string& path)
@@ -481,33 +480,12 @@ bool Image::initWithImageFile(const std::string& path)
     bool ret = false;
     _filePath = FileUtils::getInstance()->fullPathForFilename(path);
 
-#ifdef EMSCRIPTEN
-    // Emscripten includes a re-implementation of SDL that uses HTML5 canvas
-    // operations underneath. Consequently, loading images via IMG_Load (an SDL
-    // API) will be a lot faster than running libpng et al as compiled with
-    // Emscripten.
-    SDL_Surface *iSurf = IMG_Load(fullPath.c_str());
-
-    int size = 4 * (iSurf->w * iSurf->h);
-    ret = initWithRawData((const unsigned char*)iSurf->pixels, size, iSurf->w, iSurf->h, 8, true);
-
-    unsigned int *tmp = (unsigned int *)_data;
-    int nrPixels = iSurf->w * iSurf->h;
-    for(int i = 0; i < nrPixels; i++)
-    {
-        unsigned char *p = _data + i * 4;
-        tmp[i] = CC_RGB_PREMULTIPLY_ALPHA( p[0], p[1], p[2], p[3] );
-    }
-
-    SDL_FreeSurface(iSurf);
-#else
     Data data = FileUtils::getInstance()->getDataFromFile(_filePath);
-    
+
     if (!data.isNull())
     {
         ret = initWithImageData(data.getBytes(), data.getSize());
     }
-#endif // EMSCRIPTEN
 
     return ret;
 }
@@ -635,7 +613,6 @@ bool Image::isS3TC(const unsigned char * data, ssize_t dataLen)
     
     if (strncmp(header->fileCode, "DDS", 3) != 0)
     {
-        CCLOG("cocos2d: the file is not a dds file!");
         return false;
     }
     return true;
@@ -647,7 +624,6 @@ bool Image::isATITC(const unsigned char *data, ssize_t dataLen)
     
     if (strncmp(&header->identifier[1], "KTX", 3) != 0)
     {
-        CCLOG("cocos3d: the file is not a ktx file!");
         return false;
     }
     return true;
@@ -742,7 +718,8 @@ Image::Format Image::detectFormat(const unsigned char * data, ssize_t dataLen)
     }
     else
     {
-        return Format::UNKOWN;
+        CCLOG("cocos2d: can't detect image format");
+        return Format::UNKNOWN;
     }
 }
 
@@ -909,6 +886,7 @@ bool Image::initWithJpgData(const unsigned char * data, ssize_t dataLen)
 
     return ret;
 #else
+    CCLOG("jpeg is not enabled");
     return false;
 #endif // CC_USE_JPEG
 }
@@ -1236,9 +1214,9 @@ bool Image::initWithTiffData(const unsigned char * data, ssize_t dataLen)
     } while (0);
     return ret;
 #else
-    CCLOG("tiff is not enabled, please enalbe it in ccConfig.h");
+    CCLOG("tiff is not enabled");
     return false;
-#endif
+#endif //CC_USE_TIFF
 }
 
 namespace
@@ -2037,6 +2015,9 @@ bool Image::initWithWebpData(const unsigned char * data, ssize_t dataLen)
         _width    = config.input.width;
         _height   = config.input.height;
         
+        //webp doesn't have premultipliedAlpha
+        _hasPremultipliedAlpha = false;
+        
         _dataLen = _width * _height * 4;
         _data = static_cast<unsigned char*>(malloc(_dataLen * sizeof(unsigned char)));
         
@@ -2063,11 +2044,10 @@ bool Image::initWithWebpData(const unsigned char * data, ssize_t dataLen)
 }
 
 
-bool Image::initWithRawData(const unsigned char * data, ssize_t dataLen, int width, int height, int bitsPerComponent, bool preMulti)
+bool Image::initWithRawData(unsigned char * data, ssize_t dataLen, int width, int height, int bitsPerComponent, bool preMulti)
 {
     bool ret = false;
-    do 
-    {
+    do  {
         CC_BREAK_IF(0 == width || 0 == height);
 
         _height   = height;
@@ -2078,9 +2058,7 @@ bool Image::initWithRawData(const unsigned char * data, ssize_t dataLen, int wid
         // only RGBA8888 supported
         int bytesPerComponent = 4;
         _dataLen = height * width * bytesPerComponent;
-        _data = static_cast<unsigned char*>(malloc(_dataLen * sizeof(unsigned char)));
-        CC_BREAK_IF(! _data);
-        memcpy(_data, data, _dataLen);
+        _data = data;
 
         ret = true;
     } while (0);
@@ -2088,9 +2066,7 @@ bool Image::initWithRawData(const unsigned char * data, ssize_t dataLen, int wid
     return ret;
 }
 
-
-#if (CC_TARGET_PLATFORM != CC_PLATFORM_IOS)
-bool Image::saveToFile(const std::string& filename, bool isToRGB)
+bool Image::saveToFile(const std::string& filename)
 {
     //only support for Texture2D::PixelFormat::RGB888 or Texture2D::PixelFormat::RGBA8888 uncompressed data
     if (isCompressed() || (_renderFormat != Texture2D::PixelFormat::RGB888 && _renderFormat != Texture2D::PixelFormat::RGBA8888))
@@ -2101,9 +2077,7 @@ bool Image::saveToFile(const std::string& filename, bool isToRGB)
 
     bool ret = false;
 
-    do 
-    {
-
+    do  {
         CC_BREAK_IF(filename.size() <= 4);
 
         std::string strLowerCasePath(filename);
@@ -2114,7 +2088,7 @@ bool Image::saveToFile(const std::string& filename, bool isToRGB)
 
         if (std::string::npos != strLowerCasePath.find(".png"))
         {
-            CC_BREAK_IF(!saveImageToPNG(filename, isToRGB));
+            CC_BREAK_IF(!saveImageToPNG(filename));
         }
         else if (std::string::npos != strLowerCasePath.find(".jpg"))
         {
@@ -2130,9 +2104,8 @@ bool Image::saveToFile(const std::string& filename, bool isToRGB)
 
     return ret;
 }
-#endif
 
-bool Image::saveImageToPNG(const std::string& filePath, bool isToRGB)
+bool Image::saveImageToPNG(const std::string& filePath)
 {
     bool ret = false;
     do 
@@ -2171,16 +2144,8 @@ bool Image::saveImageToPNG(const std::string& filePath, bool isToRGB)
 #endif
         png_init_io(png_ptr, fp);
 
-        if (!isToRGB && hasAlpha())
-        {
-            png_set_IHDR(png_ptr, info_ptr, _width, _height, 8, PNG_COLOR_TYPE_RGB_ALPHA,
-                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-        } 
-        else
-        {
-            png_set_IHDR(png_ptr, info_ptr, _width, _height, 8, PNG_COLOR_TYPE_RGB,
-                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-        }
+        png_set_IHDR(png_ptr, info_ptr, _width, _height, 8, PNG_COLOR_TYPE_RGB_ALPHA,
+                     PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
         palette = (png_colorp)png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH * sizeof (png_color));
         png_set_PLTE(png_ptr, info_ptr, palette, PNG_MAX_PALETTE_LENGTH);
@@ -2208,59 +2173,16 @@ bool Image::saveImageToPNG(const std::string& filePath, bool isToRGB)
 
             free(row_pointers);
             row_pointers = nullptr;
-        }
-        else
-        {
-            if (isToRGB)
+        } else {
+            for (int i = 0; i < (int)_height; i++)
             {
-                unsigned char *tempData = static_cast<unsigned char*>(malloc(_width * _height * 3 * sizeof(unsigned char)));
-                if (nullptr == tempData)
-                {
-                    fclose(fp);
-                    png_destroy_write_struct(&png_ptr, &info_ptr);
-                    
-                    free(row_pointers);
-                    row_pointers = nullptr;
-                    break;
-                }
-
-                for (int i = 0; i < _height; ++i)
-                {
-                    for (int j = 0; j < _width; ++j)
-                    {
-                        tempData[(i * _width + j) * 3] = _data[(i * _width + j) * 4];
-                        tempData[(i * _width + j) * 3 + 1] = _data[(i * _width + j) * 4 + 1];
-                        tempData[(i * _width + j) * 3 + 2] = _data[(i * _width + j) * 4 + 2];
-                    }
-                }
-
-                for (int i = 0; i < (int)_height; i++)
-                {
-                    row_pointers[i] = (png_bytep)tempData + i * _width * 3;
-                }
-
-                png_write_image(png_ptr, row_pointers);
-
-                free(row_pointers);
-                row_pointers = nullptr;
-
-                if (tempData != nullptr)
-                {
-                    free(tempData);
-                }
-            } 
-            else
-            {
-                for (int i = 0; i < (int)_height; i++)
-                {
-                    row_pointers[i] = (png_bytep)_data + i * _width * 4;
-                }
-
-                png_write_image(png_ptr, row_pointers);
-
-                free(row_pointers);
-                row_pointers = nullptr;
+                row_pointers[i] = (png_bytep)_data + i * _width * 4;
             }
+            
+            png_write_image(png_ptr, row_pointers);
+            
+            free(row_pointers);
+            row_pointers = nullptr;
         }
 
         png_write_end(png_ptr, info_ptr);
@@ -2276,6 +2198,7 @@ bool Image::saveImageToPNG(const std::string& filePath, bool isToRGB)
     } while (0);
     return ret;
 }
+
 bool Image::saveImageToJPG(const std::string& filePath)
 {
 #if CC_USE_JPEG

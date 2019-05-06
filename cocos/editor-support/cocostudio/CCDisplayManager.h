@@ -61,11 +61,11 @@ public:
      * If index already have a display, then replace it.
      * If index is current display index, then also change display to _index
      *
-     *	@param 	displayData it include the display information, like DisplayType.
-     *					If you want to create a sprite display, then create a SpriteDisplayData param
+     *    @param     displayData it include the display information, like DisplayType.
+     *                    If you want to create a sprite display, then create a SpriteDisplayData param
      *
-     *	@param 	index the index of the display you want to replace or add to
-     *					-1 : append display from back
+     *    @param     index the index of the display you want to replace or add to
+     *                    -1 : append display from back
      */
     void addDisplay(DisplayData *displayData, int index);
 
@@ -74,12 +74,6 @@ public:
     void removeDisplay(int index);
 
     const cocos2d::Vector<DecorativeDisplay*>& getDecorativeDisplayList() const;
-
-    /*
-     * @deprecated, please use changeDisplayWithIndex and changeDisplayWithName
-     */
-    CC_DEPRECATED_ATTRIBUTE void changeDisplayByIndex(int index, bool force);
-    CC_DEPRECATED_ATTRIBUTE void changeDisplayByName(const std::string& name, bool force);
     
     /**
      * Change display by index. You can just use this method to change display in the display list.

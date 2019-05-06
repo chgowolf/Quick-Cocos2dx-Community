@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include "renderer/CCRenderer.h"
 #include "renderer/CCGroupCommand.h"
 #include "renderer/CCGLProgramState.h"
-#include "2d/CCDrawingPrimitives.h"
+#include "2d/CCDrawNode.h"
 #include "base/CCDirector.h"
 
 #if ENABLE_PHYSICS_BOX2D_DETECT
@@ -137,7 +137,7 @@ bool Armature::init(const std::string& name)
 
 
             ArmatureData *armatureData = armatureDataManager->getArmatureData(name);
-            CCASSERT(armatureData, "");
+            CCASSERT(armatureData, "armatureData doesn't exists!");
 
             _armatureData = armatureData;
 
@@ -212,7 +212,7 @@ Bone *Armature::createBone(const std::string& boneName)
 
     Bone *bone = nullptr;
 
-    if( parentName.length() != 0 )
+    if( !parentName.empty())
     {
         createBone(parentName.c_str());
         bone = Bone::create(boneName);
@@ -329,7 +329,7 @@ void Armature::updateOffsetPoint()
     // Set contentsize and Calculate anchor point.
     Rect rect = getBoundingBox();
     setContentSize(rect.size);
-    _offsetPoint = Vec2(-rect.origin.x,  -rect.origin.y);
+    _offsetPoint.set(-rect.origin.x, -rect.origin.y);
     if (rect.size.width != 0 && rect.size.height != 0)
     {
         setAnchorPoint(Vec2(_offsetPoint.x / rect.size.width, _offsetPoint.y / rect.size.height));
@@ -341,8 +341,8 @@ void Armature::setAnchorPoint(const Vec2& point)
     if( ! point.equals(_anchorPoint))
     {
         _anchorPoint = point;
-        _anchorPointInPoints = Vec2(_contentSize.width * _anchorPoint.x - _offsetPoint.x, _contentSize.height * _anchorPoint.y - _offsetPoint.y);
-        _realAnchorPointInPoints = Vec2(_contentSize.width * _anchorPoint.x, _contentSize.height * _anchorPoint.y);
+        _anchorPointInPoints.set(_contentSize.width * _anchorPoint.x - _offsetPoint.x, _contentSize.height * _anchorPoint.y - _offsetPoint.y);
+        _realAnchorPointInPoints.set(_contentSize.width * _anchorPoint.x, _contentSize.height * _anchorPoint.y);
         _transformDirty = _inverseDirty = true;
     }
 }
@@ -450,14 +450,6 @@ void Armature::draw(cocos2d::Renderer *renderer, const Mat4 &transform, uint32_t
 
 void Armature::onEnter()
 {
-#if CC_ENABLE_SCRIPT_BINDING
-    if (_scriptType == kScriptTypeJavascript)
-    {
-        if (ScriptEngineManager::sendNodeEventToJSExtended(this, kNodeOnEnter))
-            return;
-    }
-#endif
-    
     Node::onEnter();
     scheduleUpdate();
 }
@@ -472,30 +464,33 @@ void Armature::onExit()
 void Armature::visit(cocos2d::Renderer *renderer, const Mat4 &parentTransform, uint32_t parentFlags)
 {
     // quick return if not visible. children won't be drawn.
-    if (!_visible || !isVisitableByVisitingCamera())
+    if (!_visible)
     {
         return;
     }
 
     uint32_t flags = processParentFlags(parentTransform, parentFlags);
 
-    // IMPORTANT:
-    // To ease the migration to v3.0, we still support the Mat4 stack,
-    // but it is deprecated and your code should not rely on it
-    Director* director = Director::getInstance();
-    CCASSERT(nullptr != director, "Director is null when seting matrix stack");
-    director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
-
-
-    sortAllChildren();
-    draw(renderer, _modelViewTransform, flags);
-
-    // FIX ME: Why need to set _orderOfArrival to 0??
-    // Please refer to https://github.com/cocos2d/cocos2d-x/pull/6920
-    // setOrderOfArrival(0);
-
-    director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    if (isVisitableByVisitingCamera())
+    {
+        // IMPORTANT:
+        // To ease the migration to v3.0, we still support the Mat4 stack,
+        // but it is deprecated and your code should not rely on it
+        Director* director = Director::getInstance();
+        CCASSERT(nullptr != director, "Director is null when setting matrix stack");
+        director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+        director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
+        
+        
+        sortAllChildren();
+        draw(renderer, _modelViewTransform, flags);
+        
+        // FIX ME: Why need to set _orderOfArrival to 0??
+        // Please refer to https://github.com/cocos2d/cocos2d-x/pull/6920
+        // setOrderOfArrival(0);
+        
+        director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    }
 }
 
 Rect Armature::getBoundingBox() const
@@ -572,7 +567,6 @@ Bone *Armature::getParentBone() const
 }
 
 #if ENABLE_PHYSICS_BOX2D_DETECT || ENABLE_PHYSICS_CHIPMUNK_DETECT
-
 void Armature::setColliderFilter(ColliderFilter *filter)
 {
     for (auto& element : _boneDic)
@@ -580,54 +574,6 @@ void Armature::setColliderFilter(ColliderFilter *filter)
         element.second->setColliderFilter(filter);
     }
 }
-#elif ENABLE_PHYSICS_SAVE_CALCULATED_VERTEX
-
-void Armature::drawContour()
-{
-    for(auto& element : _boneDic)
-    {
-        Bone *bone = element.second;
-        ColliderDetector *detector = bone->getColliderDetector();
-
-        if (!detector)
-            continue;
-
-        const cocos2d::Vector<ColliderBody*>& bodyList = detector->getColliderBodyList();
-
-        for (auto& object : bodyList)
-        {
-            ColliderBody *body = static_cast<ColliderBody*>(object);
-            const std::vector<Vec2> &vertexList = body->getCalculatedVertexList();
-
-            unsigned long length = vertexList.size();
-            Vec2 *points = new (std::nothrow) Vec2[length];
-            for (unsigned long i = 0; i<length; i++)
-            {
-                Vec2 p = vertexList.at(i);
-                points[i].x = p.x;
-                points[i].y = p.y;
-            }
-            
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (push)
-#pragma warning (disable: 4996)
-#endif
-            
-            DrawPrimitives::drawPoly( points, (unsigned int)length, true );
-
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic warning "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (pop)
-#endif
-            
-            delete []points;
-        }
-    }
-}
-
 #endif
 
 #if ENABLE_PHYSICS_BOX2D_DETECT

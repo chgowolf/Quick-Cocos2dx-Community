@@ -54,8 +54,8 @@ public:
     virtual bool onTextFieldInsertText(TextFieldTTF * pSender, const char * text, size_t nLen) override;
     virtual bool onTextFieldDeleteBackward(TextFieldTTF * pSender, const char * delText, size_t nLen) override;
     
-    void insertText(const char* text, size_t len);
-    void deleteBackward();
+    void insertText(const char* text, size_t len) override;
+    void deleteBackward() override;
     
     void openIME();
     void closeIME();
@@ -92,17 +92,6 @@ protected:
     bool _deleteBackward;
 };
 
-typedef enum
-{
-    TEXTFIELD_EVENT_ATTACH_WITH_IME,
-    TEXTFIELD_EVENT_DETACH_WITH_IME,
-    TEXTFIELD_EVENT_INSERT_TEXT,
-    TEXTFIELD_EVENT_DELETE_BACKWARD,
-}TextFiledEventType;
-
-typedef void (Ref::*SEL_TextFieldEvent)(Ref*, TextFiledEventType);
-#define textfieldeventselector(_SELECTOR) (SEL_TextFieldEvent)(&_SELECTOR)
-
 /** class UITextField : public Widget
 *   @js NA
 *   @lua NA
@@ -131,7 +120,7 @@ public:
     void setTouchSize(const Size &size);
     Size getTouchSize()const;
     void setTouchAreaEnabled(bool enable);
-    virtual bool hitTest(const Vec2 &pt);
+    virtual bool hitTest(const Vec2 &pt) override;
     
     void setPlaceHolder(const std::string& value);
     const std::string& getPlaceHolder()const;
@@ -146,9 +135,6 @@ public:
     const std::string& getFontName()const;
     
     virtual void didNotSelectSelf();
-    
-    CC_DEPRECATED_ATTRIBUTE void setText(const std::string& text){this->setString(text);}
-    CC_DEPRECATED_ATTRIBUTE const std::string& getStringValue()const{return this->getString();}
     
     void setString(const std::string& text);
     const std::string& getString()const;
@@ -179,7 +165,6 @@ public:
     bool getDeleteBackward()const;
     void setDeleteBackward(bool deleteBackward);
     
-    CC_DEPRECATED_ATTRIBUTE void addEventListenerTextField(Ref* target, SEL_TextFieldEvent selecor);
     void addEventListener(const ccTextFieldCallback& callback);
     
     /**
@@ -219,19 +204,6 @@ protected:
     float _touchHeight;
     bool _useTouchArea;
     
-    Ref* _textFieldEventListener;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (push)
-#pragma warning (disable: 4996)
-#endif
-    SEL_TextFieldEvent _textFieldEventSelector;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic warning "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (pop)
-#endif
     ccTextFieldCallback _eventCallback;
     
     std::string _passwordStyleText;

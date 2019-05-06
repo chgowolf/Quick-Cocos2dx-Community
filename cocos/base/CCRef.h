@@ -51,16 +51,6 @@ public:
      * @lua NA
      */
     virtual ~Clonable() {};
-
-    /** returns a copy of the Ref.
-     * @deprecated Use clone() instead
-     */
-    CC_DEPRECATED_ATTRIBUTE Ref* copy() const
-    {
-        // use "clone" instead
-        CC_ASSERT(false);
-        return nullptr;
-    }
 };
 
 class CC_DLL Ref
@@ -142,8 +132,6 @@ public:
     unsigned int        _ID;
     /// Lua reference id
     int                 _luaID;
-    /// scriptObject, support for swift
-    void* _scriptObject;
 #endif
 
     // Memory leak diagnostic data (only included when CC_REF_LEAK_DETECTION is defined and its value isn't zero)
@@ -168,14 +156,6 @@ typedef void (Ref::*SEL_SCHEDULE)(float);
 #define CC_CALLFUNCO_SELECTOR(_SELECTOR) static_cast<cocos2d::SEL_CallFuncO>(&_SELECTOR)
 #define CC_MENU_SELECTOR(_SELECTOR) static_cast<cocos2d::SEL_MenuHandler>(&_SELECTOR)
 #define CC_SCHEDULE_SELECTOR(_SELECTOR) static_cast<cocos2d::SEL_SCHEDULE>(&_SELECTOR)
-
-// Deprecated
-#define callfunc_selector(_SELECTOR) CC_CALLFUNC_SELECTOR(_SELECTOR)
-#define callfuncN_selector(_SELECTOR) CC_CALLFUNCN_SELECTOR(_SELECTOR)
-#define callfuncND_selector(_SELECTOR) CC_CALLFUNCND_SELECTOR(_SELECTOR)
-#define callfuncO_selector(_SELECTOR) CC_CALLFUNCO_SELECTOR(_SELECTOR)
-#define menu_selector(_SELECTOR) CC_MENU_SELECTOR(_SELECTOR)
-#define schedule_selector(_SELECTOR) CC_SCHEDULE_SELECTOR(_SELECTOR)
 
 
 // end of base_nodes group

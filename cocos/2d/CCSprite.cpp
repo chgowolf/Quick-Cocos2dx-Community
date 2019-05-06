@@ -38,7 +38,7 @@ THE SOFTWARE.
 #include "renderer/CCRenderer.h"
 #include "base/CCDirector.h"
 
-#include "deprecated/CCString.h"
+#include "base/ccUTF8.h"
 
 
 NS_CC_BEGIN
@@ -265,6 +265,7 @@ Sprite::Sprite(void)
 , _shouldBeHidden(false)
 , _texture(nullptr)
 , _insideBounds(true)
+, _spriteFrame(nullptr)
 {
 #if CC_SPRITE_DEBUG_DRAW
     _debugDrawNode = DrawNode::create();
@@ -274,32 +275,13 @@ Sprite::Sprite(void)
 
 Sprite::~Sprite(void)
 {
+    CC_SAFE_RELEASE(_spriteFrame);
     CC_SAFE_RELEASE(_texture);
 }
 
 /*
  * Texture methods
  */
-
-/*
- * This array is the data of a white image with 2 by 2 dimension.
- * It's used for creating a default texture when sprite's texture is set to nullptr.
- * Supposing codes as follows:
- *
- *   auto sp = new (std::nothrow) Sprite();
- *   sp->init();  // Texture was set to nullptr, in order to make opacity and color to work correctly, we need to create a 2x2 white texture.
- *
- * The test is in "TestCpp/SpriteTest/Sprite without texture".
- */
-static unsigned char cc_2x2_white_image[] = {
-    // RGBA8888
-    0xFF, 0xFF, 0xFF, 0xFF,
-    0xFF, 0xFF, 0xFF, 0xFF,
-    0xFF, 0xFF, 0xFF, 0xFF,
-    0xFF, 0xFF, 0xFF, 0xFF
-};
-
-#define CC_2x2_WHITE_IMAGE_KEY  "/cc_2x2_white_image"
 
 // MARK: texture
 void Sprite::setTexture(const std::string &filename)
@@ -313,6 +295,7 @@ void Sprite::setTexture(const std::string &filename)
     setTextureRect(rect);
 }
 
+#define CC_2x2_WHITE_IMAGE_KEY  "/cc_2x2_white_image"
 void Sprite::setTexture(Texture2D *texture)
 {
     // If batchnode, then texture id should be the same
@@ -326,15 +309,16 @@ void Sprite::setTexture(Texture2D *texture)
         texture = Director::getInstance()->getTextureCache()->getTextureForKey(CC_2x2_WHITE_IMAGE_KEY);
 
         // If texture wasn't in cache, create it from RAW data.
-        if (texture == nullptr)
-        {
-            Image* image = new (std::nothrow) Image();
-            bool isOK = image->initWithRawData(cc_2x2_white_image, sizeof(cc_2x2_white_image), 2, 2, 8);
-            CC_UNUSED_PARAM(isOK);
-            CCASSERT(isOK, "The 2x2 empty texture was created unsuccessfully.");
-
+        if (texture == nullptr) {
+            Image * image = new (std::nothrow) Image();
+            int width = 2;
+            int height = 2;
+            ssize_t dataLen = width * height * 4;
+            unsigned char *buffer = (unsigned char *)malloc(dataLen);//release by image
+            memset(buffer, 0xFF, dataLen);
+            image->initWithRawData(buffer, dataLen, width, height, 8);
             texture = Director::getInstance()->getTextureCache()->addImage(image, CC_2x2_WHITE_IMAGE_KEY);
-            CC_SAFE_RELEASE(image);
+            image->release();
         }
     }
 
@@ -693,7 +677,7 @@ void Sprite::sortAllChildren()
 {
     if (_reorderChildDirty)
     {
-        std::sort(std::begin(_children), std::end(_children), nodeComparisonLess);
+        std::stable_sort(std::begin(_children), std::end(_children), nodeComparisonLess);
 
         if ( _batchNode)
         {
@@ -936,6 +920,15 @@ void Sprite::setSpriteFrame(const std::string &spriteFrameName)
 
 void Sprite::setSpriteFrame(SpriteFrame *spriteFrame)
 {
+    // retain the sprite frame
+    // do not removed by SpriteFrameCache::removeUnusedSpriteFrames
+    if (_spriteFrame != spriteFrame)
+    {
+        CC_SAFE_RELEASE(_spriteFrame);
+        _spriteFrame = spriteFrame;
+        spriteFrame->retain();
+    }
+
     _unflippedOffsetPositionFromCenter = spriteFrame->getOffset();
 
     Texture2D *texture = spriteFrame->getTexture();
@@ -976,6 +969,10 @@ bool Sprite::isFrameDisplayed(SpriteFrame *frame) const
 
 SpriteFrame* Sprite::getSpriteFrame() const
 {
+    if (nullptr != this->_spriteFrame)
+    {
+        return this->_spriteFrame;
+    }
     return SpriteFrame::createWithTexture(_texture,
                                            CC_RECT_POINTS_TO_PIXELS(_rect),
                                            _rectRotated,

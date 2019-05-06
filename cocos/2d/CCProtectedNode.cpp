@@ -27,12 +27,7 @@
  ****************************************************************************/
 
 #include "CCProtectedNode.h"
-
 #include "base/CCDirector.h"
-
-#if CC_USE_PHYSICS
-#include "physics/CCPhysicsBody.h"
-#endif
 #include "2d/CCScene.h"
 
 NS_CC_BEGIN
@@ -100,19 +95,6 @@ void ProtectedNode::addProtectedChild(Node *child, int zOrder, int tag)
     child->setParent(this);
     child->setOrderOfArrival(s_globalOrderOfArrival++);
     
-#if CC_USE_PHYSICS
-    // Recursive add children with which have physics body.
-    for (Node* node = this; node != nullptr; node = node->getParent())
-    {
-        Scene* scene = dynamic_cast<Scene*>(node);
-        if (scene != nullptr && scene->getPhysicsWorld() != nullptr)
-        {
-            scene->addChildToPhysicsWorld(child);
-            break;
-        }
-    }
-#endif
-    
     if( _running )
     {
         child->onEnter();
@@ -170,13 +152,6 @@ void ProtectedNode::removeProtectedChild(cocos2d::Node *child, bool cleanup)
             child->onExit();
         }
         
-#if CC_USE_PHYSICS
-        if (child->getPhysicsBody() != nullptr)
-        {
-            child->getPhysicsBody()->removeFromWorld();
-        }
-        
-#endif
         // If you don't do cleanup, the child's actions will not get removed and the
         // its scheduledSelectors_ dict will not get released!
         if (cleanup)
@@ -209,13 +184,6 @@ void ProtectedNode::removeAllProtectedChildrenWithCleanup(bool cleanup)
             child->onExitTransitionDidStart();
             child->onExit();
         }
-        
-#if CC_USE_PHYSICS
-        if (child->getPhysicsBody() != nullptr)
-        {
-            child->getPhysicsBody()->removeFromWorld();
-        }
-#endif
         
         if (cleanup)
         {
@@ -255,7 +223,7 @@ void ProtectedNode::insertProtectedChild(cocos2d::Node *child, int z)
 void ProtectedNode::sortAllProtectedChildren()
 {
     if( _reorderProtectedChildDirty ) {
-        std::sort( std::begin(_protectedChildren), std::end(_protectedChildren), nodeComparisonLess );
+        std::stable_sort( std::begin(_protectedChildren), std::end(_protectedChildren), nodeComparisonLess );
         _reorderProtectedChildDirty = false;
     }
 }
@@ -271,7 +239,7 @@ void ProtectedNode::reorderProtectedChild(cocos2d::Node *child, int localZOrder)
 void ProtectedNode::visit(Renderer* renderer, const Mat4 &parentTransform, uint32_t parentFlags)
 {
     // quick return if not visible. children won't be drawn.
-    if (!_visible || !isVisitableByVisitingCamera())
+    if (!_visible)
     {
         return;
     }
@@ -282,7 +250,7 @@ void ProtectedNode::visit(Renderer* renderer, const Mat4 &parentTransform, uint3
     // To ease the migration to v3.0, we still support the Mat4 stack,
     // but it is deprecated and your code should not rely on it
     Director* director = Director::getInstance();
-    CCASSERT(nullptr != director, "Director is null when seting matrix stack");
+    CCASSERT(nullptr != director, "Director is null when setting matrix stack");
     director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
     director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
     
@@ -295,7 +263,7 @@ void ProtectedNode::visit(Renderer* renderer, const Mat4 &parentTransform, uint3
     //
     // draw children and protectedChildren zOrder < 0
     //
-    for( ; i < _children.size(); i++ )
+    for(auto size = _children.size(); i < size; i++)
     {
         auto node = _children.at(i);
         
@@ -305,7 +273,7 @@ void ProtectedNode::visit(Renderer* renderer, const Mat4 &parentTransform, uint3
             break;
     }
     
-    for( ; j < _protectedChildren.size(); j++ )
+    for(auto size = _protectedChildren.size(); j < size; j++)
     {
         auto node = _protectedChildren.at(j);
         
@@ -324,10 +292,10 @@ void ProtectedNode::visit(Renderer* renderer, const Mat4 &parentTransform, uint3
     //
     // draw children and protectedChildren zOrder >= 0
     //
-    for(auto it=_protectedChildren.cbegin()+j; it != _protectedChildren.cend(); ++it)
+    for(auto it=_protectedChildren.cbegin()+j, itCend = _protectedChildren.cend(); it != itCend; ++it)
         (*it)->visit(renderer, _modelViewTransform, flags);
     
-    for(auto it=_children.cbegin()+i; it != _children.cend(); ++it)
+    for(auto it=_children.cbegin()+i, itCend = _children.cend(); it != itCend; ++it)
         (*it)->visit(renderer, _modelViewTransform, flags);
     
     // FIX ME: Why need to set _orderOfArrival to 0??
@@ -338,15 +306,7 @@ void ProtectedNode::visit(Renderer* renderer, const Mat4 &parentTransform, uint3
 }
 
 void ProtectedNode::onEnter()
-{
-#if CC_ENABLE_SCRIPT_BINDING
-    if (_scriptType == kScriptTypeJavascript)
-    {
-        if (ScriptEngineManager::sendNodeEventToJSExtended(this, kNodeOnEnter))
-            return;
-    }
-#endif
-    
+{    
     Node::onEnter();
     for( const auto &child: _protectedChildren)
         child->onEnter();
@@ -429,6 +389,19 @@ void ProtectedNode::disableCascadeOpacity()
     for(auto child : _protectedChildren){
         child->updateDisplayedOpacity(255);
     }
+}
+
+void ProtectedNode::setCameraMask(unsigned short mask, bool applyChildren)
+{
+    Node::setCameraMask(mask, applyChildren);
+    if (applyChildren)
+    {
+        for (auto& iter: _protectedChildren)
+        {
+            iter->setCameraMask(mask);
+        }
+    }
+    
 }
 
 NS_CC_END

@@ -93,15 +93,12 @@ public:
 
     void removeDisplay(int index);
 
-    CC_DEPRECATED_ATTRIBUTE void changeDisplayByIndex(int index, bool force);
-    CC_DEPRECATED_ATTRIBUTE void changeDisplayByName(const std::string& name, bool force);
-
     void changeDisplayWithIndex(int index, bool force);
     void changeDisplayWithName(const std::string& name, bool force);
 
     /**
      * Add a child to this bone, and it will let this child call setParent(Bone *parent) function to set self to it's parent
-     * @param 	child  the child you want to add
+     * @param     child  the child you want to add
      */
     void addChildBone(Bone *child);
 
@@ -130,7 +127,7 @@ public:
 
     /**
      * Removes a child Bone
-     * @param 	bone   the bone you want to remove
+     * @param     bone   the bone you want to remove
      */
     void removeChildBone(Bone *bone, bool recursion);
 
@@ -188,13 +185,6 @@ public:
     virtual bool isIgnoreMovementBoneData() const { return _ignoreMovementBoneData; }
 
     /*
-     * This function is deprecated, please use isIgnoreMovementBoneData()
-     * @lua NA
-     */
-    CC_DEPRECATED_ATTRIBUTE virtual bool getIgnoreMovementBoneData() const { return isIgnoreMovementBoneData(); }
-
-    
-    /*
      * Set blend function
      */
     virtual void setBlendFunc(const cocos2d::BlendFunc& blendFunc);
@@ -227,20 +217,20 @@ protected:
     DisplayManager *_displayManager;
 
     /*
-     *	When Armature play an animation, if there is not a MovementBoneData of this bone in this MovementData, this bone will be hidden.
-     *	Set IgnoreMovementBoneData to true, then this bone will also be shown.
+     *    When Armature play an animation, if there is not a MovementBoneData of this bone in this MovementData, this bone will be hidden.
+     *    Set IgnoreMovementBoneData to true, then this bone will also be shown.
      */
     bool _ignoreMovementBoneData;
 
     cocos2d::BlendFunc _blendFunc;
     bool _blendDirty;
 
-    Tween *_tween;				//! Calculate tween effect
+    Tween *_tween;                //! Calculate tween effect
 
     //! Used for making tween effect in every frame
     FrameData *_tweenData;
 
-    Bone *_parentBone;	               //! A weak reference to its parent
+    Bone *_parentBone;                   //! A weak reference to its parent
     bool _boneTransformDirty;          //! Whether or not transform dirty
 
     //! self Transform, use this to change display's state

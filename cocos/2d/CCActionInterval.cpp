@@ -420,9 +420,8 @@ void Repeat::update(float dt)
 {
     if (dt >= _nextDt)
     {
-        while (dt > _nextDt && _total < _times)
+        while (dt >= _nextDt && _total < _times)
         {
-
             _innerAction->update(1.0f);
             _total++;
 
@@ -432,8 +431,9 @@ void Repeat::update(float dt)
         }
 
         // fix for issue #1288, incorrect end value of repeat
-        if(dt >= 1.0f && _total < _times) 
+        if (std::abs(dt - 1.0f) < FLT_EPSILON && _total < _times)
         {
+            _innerAction->update(1.0f);
             _total++;
         }
 
@@ -442,7 +442,6 @@ void Repeat::update(float dt)
         {
             if (_total == _times)
             {
-                _innerAction->update(1);
                 _innerAction->stop();
             }
             else
@@ -831,12 +830,6 @@ void RotateTo::update(float time)
             }
             else
             {
-                // _startAngle.x != _startAngle.y || _diffAngle.x != _diffAngle.y
-                if (_target->getPhysicsBody() != nullptr)
-                {
-                    CCLOG("RotateTo WARNING: PhysicsBody doesn't support skew rotation");
-                }
-                
                 _target->setRotationSkewX(_startAngle.x + _diffAngle.x * time);
                 _target->setRotationSkewY(_startAngle.y + _diffAngle.y * time);
             }
@@ -974,12 +967,6 @@ void RotateBy::update(float time)
             }
             else
             {
-                // _startAngle.x != _startAngle.y || _deltaAngle.x != _deltaAngle.y
-                if (_target->getPhysicsBody() != nullptr)
-                {
-                    CCLOG("RotateBy WARNING: PhysicsBody doesn't support skew rotation");
-                }
-                
                 _target->setRotationSkewX(_startAngle.x + _deltaAngle.x * time);
                 _target->setRotationSkewY(_startAngle.y + _deltaAngle.y * time);
             }
@@ -1102,12 +1089,10 @@ MoveTo* MoveTo::clone() const
 	return a;
 }
 
-void MoveTo::update(float t)
+void MoveTo::startWithTarget(Node *target)
 {
-    if (0 == t) {
-        _positionDelta = _endPosition - _target->getPosition();
-    }
-    MoveBy::update(t);
+    MoveBy::startWithTarget(target);
+    _positionDelta = _endPosition - target->getPosition();
 }
 
 

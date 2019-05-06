@@ -67,11 +67,15 @@ bool HTTPRequest::initWithUrl(const char *url, int method)
 
     m_url = url;
 
-    if (method == kCCHTTPRequestMethodPOST) {
-        m_httpMethod = "POST";
-    } else {
-        m_httpMethod = "GET";
-    }
+	if (method == kCCHTTPRequestMethodPOST) {
+		m_httpMethod = "POST";
+	} else if(method == kCCHTTPRequestMethodPUT) {
+		m_httpMethod = "PUT";
+	} else if(method == kCCHTTPRequestMethodDELETE) {
+		m_httpMethod = "DELETE";
+	} else {
+		m_httpMethod = "GET";
+	}
 
     ++s_id;
     // CCLOG("HTTPRequest[0x%04x] - create request with url: %s", s_id, url);
@@ -189,6 +193,9 @@ bool HTTPRequest::start(void)
     retain();
 
     createURLConnectJava();
+	if (!m_httpConnect) {
+		return false;
+	}
     setRequestMethodJava();
     setTimeoutJava(m_nTimeOut*1000);
 
@@ -211,13 +218,8 @@ bool HTTPRequest::start(void)
         addRequestHeaderJava("Cookie", m_cookies, bBoundary);
     }
 
-    // memset(&m_thread, 0, sizeof(pthread_t));
-    // memset(&m_threadAttr, 0, sizeof(pthread_attr_t));
-    // pthread_attr_init (&m_threadAttr);
-    // pthread_attr_setdetachstate (&m_threadAttr,PTHREAD_CREATE_DETACHED);
-    // pthread_create(&m_thread, &m_threadAttr, requestCURL, this);
     pthread_create(&m_thread, NULL, requestCURL, this);
-    // pthread_detach(m_thread);
+    pthread_detach(m_thread); // unjoinable
     
     Director::getInstance()->getScheduler()->scheduleUpdate(this, 0, false);
     // CCLOG("HTTPRequest[0x%04x] - request start", s_id);
@@ -358,7 +360,7 @@ void HTTPRequest::update(float dt)
     Director::getInstance()->getScheduler()->unscheduleAllForTarget(this);
     if (m_curlState != kCCHTTPRequestCURLStateIdle)
     {
-        Director::getInstance()->getScheduler()->schedule(schedule_selector(HTTPRequest::checkCURLState), this, 0, false);
+        Director::getInstance()->getScheduler()->schedule(CC_SCHEDULE_SELECTOR(HTTPRequest::checkCURLState), this, 0, false);
     }
 
     if (m_state == kCCHTTPRequestStateCompleted)
@@ -577,7 +579,6 @@ void *HTTPRequest::requestCURL(void *userdata)
     if(jvm->DetachCurrentThread() != JNI_OK) {
         CCLOG("HTTPRequest - requestCURL DetachCurrentThread fail");
     }
-    // pthread_detach(pthread_self());
     pthread_exit((void *)0);
     return NULL;
 }

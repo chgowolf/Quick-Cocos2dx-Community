@@ -46,7 +46,6 @@ Ref::Ref()
     static unsigned int uObjectCount = 0;
     _luaID = 0;
     _ID = ++uObjectCount;
-    _scriptObject = nullptr;
 #endif
     
 #if CC_REF_LEAK_DETECTION
@@ -61,14 +60,6 @@ Ref::~Ref()
     if (_luaID)
     {
         ScriptEngineManager::getInstance()->getScriptEngine()->removeScriptObjectByObject(this);
-    }
-    else
-    {
-        ScriptEngineProtocol* pEngine = ScriptEngineManager::getInstance()->getScriptEngine();
-        if (pEngine != nullptr && pEngine->getScriptType() == kScriptTypeJavascript)
-        {
-            pEngine->removeScriptObjectByObject(this);
-        }
     }
 #endif
 

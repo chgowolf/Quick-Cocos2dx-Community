@@ -41,7 +41,7 @@ THE SOFTWARE.
 #include "renderer/CCTextureCache.h"
 
 
-#include "deprecated/CCString.h"
+#include "base/ccUTF8.h"
 
 
 using namespace std;
@@ -238,6 +238,7 @@ void SpriteFrameCache::addSpriteFramesWithFile(const std::string& plist)
 
     if (_loadedFileNames->find(plist) == _loadedFileNames->end())
     {
+        
         std::string fullPath = FileUtils::getInstance()->fullPathForFilename(plist);
         ValueMap dict = FileUtils::getInstance()->getValueMapFromFile(fullPath);
 

@@ -39,6 +39,28 @@ THE SOFTWARE.
 #include "base/ccUtils.h"
 #include "base/ccUTF8.h"
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+#ifndef GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#endif
+#ifndef GLFW_EXPOSE_NATIVE_WGL
+#define GLFW_EXPOSE_NATIVE_WGL
+#endif
+#include "glfw3native.h"
+#endif /* (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) */
+
+// move from .h file to .cpp, to make cocoa Size not effect to CCSize.
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+#ifndef GLFW_EXPOSE_NATIVE_NSGL
+#define GLFW_EXPOSE_NATIVE_NSGL
+#endif
+#ifndef GLFW_EXPOSE_NATIVE_COCOA
+#define GLFW_EXPOSE_NATIVE_COCOA
+#endif
+#include "glfw3native.h"
+#endif // #if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+
+
 NS_CC_BEGIN
 
 // GLFWEventHandler
@@ -303,6 +325,20 @@ GLViewImpl::~GLViewImpl()
     glfwTerminate();
 }
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+HWND GLViewImpl::getWin32Window()
+{
+    return glfwGetWin32Window(_mainWindow);
+}
+#endif /* (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) */
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+id GLViewImpl::getCocoaWindow()
+{
+    return glfwGetCocoaWindow(_mainWindow);
+}
+#endif // #if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+
 GLViewImpl* GLViewImpl::create(const std::string& viewName)
 {
     auto ret = new (std::nothrow) GLViewImpl;
@@ -363,6 +399,16 @@ bool GLViewImpl::initWithRect(const std::string& viewName, Rect rect, float fram
     glfwWindowHint(GLFW_DEPTH_BITS,_glContextAttrs.depthBits);
     glfwWindowHint(GLFW_STENCIL_BITS,_glContextAttrs.stencilBits);
 
+    // bugfix: change windows size with Monitor size, make win32 touch event happy.
+    GLFWmonitor* pMonitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode * mode = glfwGetVideoMode(pMonitor);
+    float scale = MIN((mode->width - 120) / rect.size.width, (mode->height - 120) / rect.size.height);
+    if (scale >= 1.0) {
+        scale = 1.0;
+    }
+    rect.size.width = scale * rect.size.width;
+    rect.size.height = scale * rect.size.height;
+    
     _mainWindow = glfwCreateWindow(rect.size.width * _frameZoomFactor,
                                    rect.size.height * _frameZoomFactor,
                                    _viewName.c_str(),
@@ -551,18 +597,41 @@ void GLViewImpl::setFrameSize(float width, float height)
 
 void GLViewImpl::setViewPortInPoints(float x , float y , float w , float h)
 {
-    glViewport((GLint)(x * _scaleX * _retinaFactor * _frameZoomFactor + _viewPortRect.origin.x * _retinaFactor * _frameZoomFactor),
-               (GLint)(y * _scaleY * _retinaFactor  * _frameZoomFactor + _viewPortRect.origin.y * _retinaFactor * _frameZoomFactor),
-               (GLsizei)(w * _scaleX * _retinaFactor * _frameZoomFactor),
-               (GLsizei)(h * _scaleY * _retinaFactor * _frameZoomFactor));
+    float deskFactor = _retinaFactor * _frameZoomFactor;
+    glViewport((GLint)(x * _scaleX * deskFactor + _viewPortRect.origin.x * deskFactor),
+               (GLint)(y * _scaleY * deskFactor + _viewPortRect.origin.y * deskFactor),
+               (GLsizei)(w * _scaleX * deskFactor),
+               (GLsizei)(h * _scaleY * deskFactor));
 }
 
 void GLViewImpl::setScissorInPoints(float x , float y , float w , float h)
 {
-    glScissor((GLint)(x * _scaleX * _retinaFactor * _frameZoomFactor + _viewPortRect.origin.x * _retinaFactor * _frameZoomFactor),
-               (GLint)(y * _scaleY * _retinaFactor  * _frameZoomFactor + _viewPortRect.origin.y * _retinaFactor * _frameZoomFactor),
-               (GLsizei)(w * _scaleX * _retinaFactor * _frameZoomFactor),
-               (GLsizei)(h * _scaleY * _retinaFactor * _frameZoomFactor));
+    if (_isRenderTextureMode) {
+        glScissor(x, y, w, h);
+        return;
+    }
+    float deskFactor = _retinaFactor * _frameZoomFactor;
+    glScissor((GLint)(x * _scaleX * deskFactor + _viewPortRect.origin.x * deskFactor),
+              (GLint)(y * _scaleY * deskFactor + _viewPortRect.origin.y * deskFactor),
+              (GLsizei)(w * _scaleX * deskFactor),
+              (GLsizei)(h * _scaleY * deskFactor));
+}
+
+Rect GLViewImpl::getScissorRect() const
+{
+    GLfloat params[4];
+    glGetFloatv(GL_SCISSOR_BOX, params);
+
+    if (_isRenderTextureMode) {
+        return Rect(params[0], params[1], params[2], params[3]);
+    }
+
+    float deskFactor = _retinaFactor * _frameZoomFactor;
+    float x = (params[0] - _viewPortRect.origin.x) / _scaleX / deskFactor;
+    float y = (params[1] - _viewPortRect.origin.y) / _scaleY / deskFactor;
+    float w = params[2] / _scaleX / deskFactor;
+    float h = params[3] / _scaleY / deskFactor;
+    return Rect(x, y, w, h);
 }
 
 void GLViewImpl::onGLFWError(int errorID, const char* errorDesc)

@@ -1,0 +1,321 @@
+Quick-Cocos2dx-Community v3.7.6 Release
+
+[新增] Android arm64 支持。
+[新增] 龙骨支持。
+[新增] Windows 添加 Luajit 64 执行程序，可在 Windows 上打包64位 bytecode 了。
+
+[改进] cc.pGetAngle() 实现优化。
+[改进] retain the sprite frame, do not removed by SpriteFrameCache::removeUnusedSpriteFrames.
+[改进] [luaoc] add conversion lua table to ObjC Dictionary.
+[改进] [luaj] Add missing default cases.
+[改进] [luaj] fix the return value to nil instead of empty string when java return null.
+[改进] Player创建项目，恢复 copy engine src 按钮。
+[改进] AndroidManifest.xml去掉minSdkVersion, build.gradle 中取代。
+[改进] PackageScripts.py开启ZIP_DEFLATED，减少zip包体积。
+
+[修正] csb解析 UIButton 时，在正确的位置初始化 setTitleFontSize。
+[修正] Mac Player 在最新系统上创建项目需要执行权限的问题修正。
+[修正] 修正 Java http 内存泄漏问题。
+[修正] Spine runtime 3.6 修正"Early exit if slot is invisible"，可能导致裁剪节点被忽略，渲染异常的问题。
+[修正] Spine runtime 3.6 同步官方的2处修正。
+[修正] Android applicationWillEnterForeground: don't invoke at first to keep the same logic as iOS.
+[修正] 某些情况下 android 切后台 label 变白块.
+
+Quick-Cocos2dx-Community v3.7.5 Release
+
+[改进] clone 可以拷贝 ccui.Text 的color。"clone不推荐使用"。
+[改进] sp.SkeletonAnimation 添加 registerSpineUpdateHook，支持程序动画。
+[改进] sp.SkeletonAnimation 添加 setEmptyAnimation, setEmptyAnimations, addEmptyAnimation 用于清理track上的残余信息。
+[改进] Android 默认 APP_ABI armeabi-v7a。
+[改进] 升级 OpenSSL 到 1.0.2q。
+[改进] 升级 Curl 到 7.52.1。
+
+[修正] PB bugfix: unpack double crash. use union to avoid crash on Android (signal 7)
+[修正] 修正 Mac 下 log 被截断的问题。
+
+Quick-Cocos2dx-Community v3.7.4 Release
+
+[改进] chipmunk 更新到 7.0.2，physics intergate 改进。
+[改进] Player添加物理引擎demo。
+[改进] EncodeRes.py 去掉xxtea.pyd依赖，Win32上可以使用64位的python来加密了。
+[改进] 新接口，cc.EventTouch:setTouches{cc.p(x,y), cc.p(x,y), …}。可以用来模拟触摸事件。
+[改进] config.lua 中去掉无用的变量。
+[改进] luasocket 的 socket open 添加异步线程，让第一次open不至于在某些特定情况下卡死UI。
+[改进] 更新 OpenAL 到 1.19.1。
+[改进] Scale9Sprite 添加 setGLProgramState 支持自定义shader。
+[改进] pb int64 最大值改进（max 2^ 53）。
+[改进] player的log路径修改为可写路径。
+[改进] iOS 模版工程改进，添加新的icon尺寸格式。
+[改进] Android studio模版配置改进，支持3.2的 AS。
+[改进] 同步-x win32输入法改进，并修正缩放bug。
+[改进] 改进Label，正确显示阴影。
+[改进] ClippingRectangleNode嵌套再改进，算法同 ccui.Layout。
+[改进] VideoPlayer 改进。
+
+[修正] Node:addNodeEventListener 如果先注册触摸，再注册节点，节点事件将添加失败。
+[修正] iOS的 applicationDidReceiveMemoryWarning 去掉 purgeCachedData() 调用，其方式粗暴，并对plist不友好。
+[修正] 同一csb动画，在另一个csb中引用多次，只能播放一次。
+[修正] spine 3.6 runtime 的两个官方修正同步。
+[修正] Android editbox 在setText的时候，修正光标位置位到末尾。
+
+Quick-Cocos2dx-Community v3.7.3 Release
+
+[新增]	创建新工程python脚本中添加 --deep-copy 选项，可导出cocos2d源码至新工程中。（感谢 guolihui112@gmail.com）
+[新增]	iOS 模拟器中默认开启 -pagezero_size 10000 -image_base 100000000 链接选项。（感谢 guolihui112@gmail.com）
+[新增]	Spine runtime 更新到 3.6。
+[新增]	Spine Lua binding 新增updateBone 、getAttachment、setDebugMeshesEnabled、setDebugPointEnabled、setDebugBoundingBoxEnabled、setDebugPathEnabled。(感谢 马超)
+[新增]	CocosStudio 支持到3.10 （感谢 1066535716@qq.com ）。
+
+[修正]	http 链接超时和数据超时分开。setTimeout只处理数据超时。
+[修正]	tmx中的tileset image，处理为相对路径，热更友好。
+[修正]	OpanAL audio 初始化异常处理。
+[修正]	iOS mac使用和win32，android一致的plist读写接口，确保加密的plist可以正确被解密。
+[修正]	Lable % 无法正确被统计长度进行自动换行。
+[修正]	ActionTimeline 正确停在最后一帧。
+[修正]	NodeEx.lua 中的 Node:unregisterScriptHandler() 修正。
+[修正]	fix display.newTTFLabel({text = “x”, size = 0}), crash java code.
+
+Quick-Cocos2dx-Community v3.7.2 release
+
+[改进]	editbox 实现更新为 cocos2d-x 3.15.1 版本的实现。
+[改进]	css的gotoFrameAndPlay支持倒放动画，例如gotoFrameAndPlay(100, 50, false)。
+[改进]	动作Repeat的update同步到3.15.
+[改进]	cc.Lable添加getStringOfLine()，用户获取自动换行后的某一行字符串。
+[改进]	notificationNode支持使用动作。
+[改进]	iPhoneX 适配模版更新。使用限制OpenGL viewrect的方式来避免Lua代码修改。
+[改进]	新加display.newRoundedRect，感谢Shine Wu提供。
+[改进]	删除setPopupNotify 和 isPopupNotify。注意修改项目的main.lua，去掉对应行。
+[改进]	Android Studio 模版工程改进。
+[改进]	build_native.py改进，release模式不拷贝src文件夹。（IMPROTANT）
+[改进]	EncodeRes.py现在加密xml和plist文件。
+[改进]	RichText 默认透明穿透。
+
+[修正]	Xcode9文件夹红名修正。
+[修正]	UILayout正确获取嵌套下的父节点裁剪区域。
+[修正]	ccui.Image reloadTexture不清空9枚设置。
+[修正]	ccui.Button图标状态代码修正。
+[修正]	string.utf8len 避免错误的utf8流导致的死循环。
+[修正]	iOS真机CODESIGNING, Code 0x2错误修正。（IMPORTANT，替换luajit.a库）
+[修正]	luaoc 类型判断改进。
+[修正]	ccui.Widget的propagateTouchEvent和isClippingParentContainsPoint改进，不再被非widget节点打断导致判断失效。
+[修正]	修正华为手机输入法单行输入不响应换行键的bug。
+
+Quick-Cocos2dx-Community v3.7.1 release
+
+[新增]	setup.sh 适配zsh，csh，运行完需重启terminal。
+[新增]	RichText添加RichElementNewLine, RichElement添加getType和getTag，相关绑定去垃圾。
+[新增]	Player恢复Open Project功能
+[新增]	lua_loadChunksFromZIP 自动处理package.loaded,服务于热更新.
+[新增]	Player新增iphone7和note 8的分辨率配置
+[新增]	Accelerometer 封装到lua层的node事件机制中。
+
+[修正]	csb引用的csb的动画默认不循环.
+[修正]	ClippingRectangleNode 默认开启 setCascadeColorEnabled和setCascadeOpacityEnabled
+[修正]	ClippingRectangleNode 正确处理裁剪嵌套
+[修正]	恢复Store.lua文件，调整平台相关的lua存放路径
+[修正]	3.7触摸事件封装bug修正。
+[修正]	Rendertexture即时渲染，不再延迟到下一帧
+[修正]	CaptureScreen逻辑移动到Director中，可完整截图到NotificationNode和fps
+[修正]	修正win32下png写文件导致的死机.
+[修正]	修复luasocket在window上设置settime(0)时不能收到close事件。
+[修正]	SimpleTCP bug修正。
+[修正]	Android 编译相关错误修正
+[修正]	TextField histTest fixed.
+[修正]	socket.dns.getaddrinfo 遇到异常时，lua栈平衡修复。
+[修正]	ccui.Layout的Scissor裁剪bugfix,并默认使用Scissor，裁剪渲染性能大幅提升。
+[修正]	libogg so库分离，优化android release编译下的ogg解码性能。
+[修正]	事件分发正确处理protected node 的事件监听。
+[修正]	RichText修正ContentSize计算和子节点坐标计算。
+[修正]	Scale9Sprite 正确在自定义摄像机下渲染。
+
+Quick-Cocos2dx-Community v3.7.0 release
+
+[新增]	全新的OpenAL音频播放引擎。
+[新增]	合并ian me@iany.me提供的lable outline改进。
+[新增]	ccui.Listview改进。
+[新增]	xxtea 加解密逻辑调整，现在只对资源加密，而game.zip也算一种资源。同时解密接口暴露给项目自行定制，模版工程提供范例。
+[新增]	添加接口 ccui.Button:setTitleOffset(x, y)，可自定义button字体位置。
+[新增]	cc.Image添加像素点获取接口。
+[新增]	lpack 扩展 g 来识别 long long。
+[新增]	TMXTilesetInfo添加getProperties封装。
+
+[更新]	Luajit 更新到 2.1.0-beta3，iOS 模拟器可以正常启动了。
+[更新]	tiledmap相关模块同步为3.14最新代码。
+[更新]	RenderTexture同步为3.14代码。
+[更新]	重写 player 的 welcome 代码。
+[更新]	重写 sample。
+[更新]	用3.x事件系统重写 quick 的事件封装代码。
+[更新]	Tiledmap lua 绑定代码分离，感谢：逐梦流云。
+[更新]	所有php脚本由python重写。
+[更新]	Player优先加载项目下的framework，便于framework自定义的开发测试。
+
+[删除]	去掉2.x的事件机制。
+[删除]	去掉quick的事件机制（只保留3.x的事件机制）。
+[删除]	去掉2.x的UI控件。
+[删除]	去掉quick的UI控件（只保留ccui）。
+[删除]	去掉Layer。
+[删除]	精简quick framework，删除大量低质量的 Lua 模块。
+[删除]	去掉了AssetsManagerEx，它的事件过于复杂，纯Lua的热更新方案更灵活。
+[删除]	去掉了httpclient（只保留quick的http）。
+[删除]	去掉physicsSprite。
+[删除]	去掉extensions，包含cocosbuilder（它依赖2.x的事件系统）。
+[删除]	去掉filter，自定义shader更灵活。
+[删除]	去掉lableTTF 和 LabelBMF。
+[删除]	去掉所有deprecated模块与函数。
+[删除]	去掉DrawPrimitives。
+[删除]	去掉EMSCRIPTEN相关代码。
+[删除]	去掉tools文件夹。
+
+[修正]	修正了多摄像机的渲染，截图等bug。
+[修正]	spine事件注销的错误修正。
+[修正]	引擎中异步线程的信号量bug修正。
+[修正]	CilpingRectangle 嵌套 bug 修正。
+[修正]	现在 ccui.Helper:seekWidgetByName() 不被非 widget 节点打断。
+[修正]	Mac 的 NSConcreteAttributedString initWithString:: nil value 错误保护。
+[修正]	device.getOpenUDID android权限请求处理。
+[修正]	Rendertexture 导致 ClippingRectangleNode 区域错误的修正。
+[修正]	修正ccui.listview滚动时，内部的button反复经过热点会高亮闪烁。
+[修正]	修正当node在update中删除自己的时候，会导win32访问非法指针。
+[修正]	修正ccui.LoadingBar在loadTexture后不刷新进度条的bug。
+[修正]	修正ccui.widget在setEnabled(false)之后不更新图片状体的bug。
+
+Quick-Cocos2dx-Community v3.6.5 release
+
+[新增]	Win32 平台升级到 VS 2015 编译，放弃 VS 2013 支持。
+[新增]	iOS 的 IAP 支付封装，支持 iOS 7 新增的 userInfo 属性。（感谢 ShineWu）
+[新增]	libwebsockets 添加 wss 支持，并支持自定义证书。
+[新增]	Websocket 加入编译控制宏：CC_USE_WEBSOCKET。
+[新增]	添加 unqlite 数据库支持，并添加编译控制宏。（感谢 dancingfish）
+[新增]	新加 Webview 的 Lua 绑定。（感谢 ShineWu）
+[新增]	CCS 添加 setLastFrameCallFunc 事件绑定。(感谢马超)
+[新增]	添加 protobuf 编译控制宏：CC_USE_PROTOBUF。
+[新增]	新加 Sproto，并加入编译控制宏：CC_USE_SPROTO。
+
+[更新]	libwebsockets 更新到 1.7.9。经测试，这个版本可以同时支持 ipv6 和 wss。
+[更新]	Android Studo模板工程更新，以支持低版本SDK的编译。
+[更新]	重写热更新Demo，并附加说明文档：热更新 Demo 说明。(感谢SamSara)
+
+[修正]	Android r10d release build fix，去掉LOCAL_ARM_MODE=arm。Application.mk 中使用 NDK_TOOLCHAIN_VERSION=4.9 能正确编译release，这样保持了引擎与第三方库编译配置的一致性。
+[修正]	CCS clone 节点异常修正。
+[修正]	修复因为AudioEngine::stop或audioEngine::stopAll引起的界面冻结。（感谢 8liang）
+[修正]	Win32和Mac可以正确获取到键盘的”Pressed”和”Released”事件了。
+[修正]	Player在显示超出显示器支持的窗口大小时，会自动缩放在屏幕内显示，这样可保证触摸点击不会漂移。
+[修正]	display.addSpriteFrames 异步加载图片，支持 display.setTexturePixelFormat 指定图片加载格式。
+[修正]	修正“device.openURL”在 android 上崩溃的问题。
+[修正]	修正AssetsManager: when last hot fix was interrupted, the next hot fix will dump。（感谢 HantaoSun）
+[修正]	同步cocos2dx的android videoplay，修复ccexp.VideoPlayer概率性黑屏。
+[修正]	Android 的 http 使用 CC_USE_CURL 宏控制启动 Java http 还是 CURL http。
+[修正]	Java http 异常处理优化。
+[修正]	ScriptsCompiler.php 解决每次执行lua代码打包脚本，即使lua文件无任何改动，zip包的md5值也不一样的问题。
+[修正]	修正metatable 的 __tostring 不能正常被 print 调用的bug修正。
+[修正]	Quick/lib下的第三方 lua 库的 stack 异常修正。
+[修正]	Android 的 TTF lable 修正：input is not valid Modified UTF-8: illegal start byte。通常是由输入法的emoji表情导致。
+
+Quick-Cocos2dx-Community v3.6.4 release
+
+[新增]	Android Studio 打包支持。
+[新增]	protobuffer 2.6.1 支持。
+
+[移除]	去掉ADT编译支持，去掉Android的anysdk支持。
+
+[更新]	OpenSSL 1.0.2g for android 重新进行了编译。
+[更新]	lib webp update to 0.5.1。
+
+[修正]	修正 macOS 10.12.1 下 player 不能输入文字。
+[修正]	Spine runtime 修正同时渲染多个cachedata的bug。
+[修正]	macOS Sierra php脚本运行错误修正。
+[修正]	win32 release build error fix。
+
+Quick-Cocos2dx-Community v3.6.3 release
+
+[更新]	Spine runtime更新以支持Spine 3.4编辑器导出的新Json格式。
+[更新]	OpenSSL更新到1.0.2g，以满足 google play 审核。
+[更新]	更新网络库，以支持ipv6 （iOS App Store 审核需求）
+[更新]	SocketTCP 加入ipv6网络检查（服务器地址必需域名方式）。
+
+[新增]	Spine 新增绑定接口 http://www.tairan.com/archives/11277/
+
+[修正]	Luajit log buffer size恢复到512，解决log信息不全。
+[修正]	UISilder bugfix：在onSliderPressed中调用SilderValue不能正确更新滑块位置。
+[修正]	assert-manager json解析错误与curl下载错误修正。
+[修正]	修正Cocos2dConstants.lua中cc.LANGUAGE_xxx 系列常量错误
+
+Quick-Cocos2dx-Community v3.6.2 release
+
+[新增]	Spine 新增加lua绑定接口: http://www.tairan.com/archives/11166/
+[新增]	新增加 Quick 热更新 demo。
+[新增]	network.createHTTPRequest 新增put和delete方法支持。
+
+[更新]	更新LuaJIT 2.1.0-beta2
+[更新]	cc/uiloader/CCSUILoader2 改进
+[更新]	Android NDK 支持更新到 r10e。
+
+Quick-Cocos2dx-Community v3.6.1 release
+
+[更新]	Android 库全部用NDK r10d编译并更新，3.6.1 推荐使用 NDK r10d 进行项目编译。
+[更新]	Chipmunk升级到 6.2.2
+[更新]	curl升级到7.40.0
+[更新]	freetype升级到2.5.5
+[更新]	jpeg升级到v9
+[更新]	tiff升级到4.0.3
+[更新]	web升级到 0.4.4
+[更新]	libwebsockets升级到 1.3-chrome37-firefox30
+[更新]	rapidjson升级到 dee230b。
+
+[修正]	cc.pIsSegmentIntersect 判断修正
+[修正]	创建项目的php脚本去掉_ENV依赖，解决Mac用户用brew升级php后导致创建项目失败的bug。
+[修正]	Android与win32 现在能正确处理加密的资源文件。
+[修正]	ccui.Helper:seekWidgetByName 与 ccui.Helper:seekWidgetByTag 现在能正常工作。
+[修正]	手动添加 cc.CardinalSplineTo:create 绑定。
+[修正]	Luajit能完整打印log了。
+[修正]	Android 5.0 运行报告 md5_init 错误修正。
+[修正]	CCFileUtils 解析 UTF8＋BOM 字节文件时“key not found”的问题修正。
+[修正]	修正Windows player 部分机器不能保存历史记录的bug。
+
+Quick-Cocos2dx-Community v3.6 release
+
+[修正]	在setup_mac.sh中为player.app添加可执行权限
+[修正]	修复sp.SkeletonData内存泄漏问题
+[修正]	修复TileMap中getTileAt()方法
+
+Quick-Cocos2dx-Community v3.6 beta2,build e0032f7
+
+[新增]	compile_script 加入 bit mode，已支持生成64位的luajit bytecode
+[新增]	新增 encrypt_res 工具，用于资源文件加密
+
+[修正]	修正新增的sample没有预览图片的问题
+[修正]	修正塔防sample存档之后不能启动的bug
+[修正]	修正setup_win.bat中的错误提示
+[修正]	增强setup_mac.sh的异常处理，并更新说明文档
+[修正]	win32 player 打包加入运行库，并能正确显示log
+[修正]	修正 Android 编译ndk时候找不到opengl头文件的错误
+
+[删除]	去掉build_apk脚本（脚本需要Android环境支持，并不能直接运行）
+
+Quick-Cocos2dx-Community v3.6 beta1,build 3b7c215
+
+[更新]	Spine runtime更新到2.3
+[更新]	新增Spine对象绑定sp.SkeletonData，可从sp.SkeletonData创建SkeletonAnimation，以便开发者可用数据缓存提升spine加载速度
+[更新]	更新 Luajit 到 2.1.0-beta1，支持 arm64
+[更新]	创建工程去掉"Copy Sources Files"选项
+[更新]	更新 compile_script，使用 Luajit 来生成 bytecode
+[更新]	更新模版工程，适应 iOS9 变化，默认bitcode改为"NO"
+
+[新增]	CONFIG_SCREEN_AUTOSCALE 新增 EXACT_FIT 选项
+[新增]	新增 cc.FileUtils:getDataFromFile 接口
+[新增]	新增 CocoStudio 2.0 支持
+[新增]	UI控件新增 clone() 接口
+
+[修正]	修正Mac Player不能正确调用cc.FileUtils:getInstance():getStringFromFile的错误
+[修正]	修正 DrawPrimitives.lua 中的拼写错误
+[修正]	修正 EventProtocol.lua中的 bug
+[修正]	修正 clipping rectangle node 缩放 bug
+[修正]	修正 autorelease 内存泄漏
+[修正]	修正 Mac 下显示 FPS 导致崩溃的bug
+[修正]	修正 Node:hitTest 错误
+[修正]	修正 UIScrollView 滚动bug
+[修正]	修正 UIListView 中的内存泄漏
+[修正]	修正 LuaEventNode 中的bug
+
+[删除]	去掉 Windows Phone 支持
+[删除]	去掉 Cocos Code IDE 支持

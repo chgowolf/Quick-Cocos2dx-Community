@@ -41,6 +41,8 @@ NS_CC_BEGIN
  * @{
  */
 
+typedef void (*FiledataDecoder)(Data &data);
+
 //! @brief  Helper class to handle file operations
 class CC_DLL FileUtils
 {
@@ -54,12 +56,6 @@ public:
      *  Destroys the instance of FileUtils.
      */
     static void destroyInstance();
-
-    /** @deprecated Use getInstance() instead */
-    CC_DEPRECATED_ATTRIBUTE static FileUtils* sharedFileUtils() { return getInstance(); }
-
-    /** @deprecated Use destroyInstance() instead */
-    CC_DEPRECATED_ATTRIBUTE static void purgeFileUtils() { destroyInstance(); }
 
     /**
      *  The destructor of FileUtils.
@@ -80,25 +76,24 @@ public:
     
     /**
      *  Gets string from a file.
+     *  IMPORTANT: DO NOT OVERRIDE ME!
      */
-    virtual std::string getStringFromFile(const std::string& filename);
+    std::string getStringFromFile(const std::string& filename);
     
     /**
      *  Creates binary data from a file.
+     *  IMPORTANT: DO NOT OVERRIDE ME!
      *  @return A data object.
      */
-    virtual Data getDataFromFile(const std::string& filename);
-    
+    Data getDataFromFile(const std::string& filename);
+
     /**
-     *  Gets resource file data
-     *
-     *  @param[in]  filename The resource file name which contains the path.
-     *  @param[in]  pszMode The read mode of the file.
-     *  @param[out] pSize If the file read operation succeeds, it will be the data size, otherwise 0.
-     *  @return Upon success, a pointer to the data is returned, otherwise NULL.
-     *  @warning Recall: you are responsible for calling free() on any Non-NULL pointer returned.
+     *  Get File date from file.
+     *  OVERRIDE ME, if not use fopen to get file data
+     *  @param[in] forString, openfile with string mode or not.
+     *  @return A data object
      */
-    CC_DEPRECATED_ATTRIBUTE virtual unsigned char* getFileData(const std::string& filename, const char* mode, ssize_t *size);
+    virtual Data getData(const std::string& filename, bool forString);
 
     /**
      *  Gets resource file data from a zip file.
@@ -110,7 +105,6 @@ public:
      */
     virtual unsigned char* getFileDataFromZip(const std::string& zipFilePath, const std::string& filename, ssize_t *size);
 
-    
     /** Returns the fullpath for a given filename.
      
      First it will try to get a new filename from the "filenameLookup" dictionary.
@@ -292,12 +286,6 @@ public:
      *  Set writable/cache path (for debug).
      */
     virtual void setWritablePath(const char *writablePath);
-    
-    /**
-     *  Sets/Gets whether to pop-up a message box when failed to load an image.
-     */
-    virtual void setPopupNotify(bool notify);
-    virtual bool isPopupNotify();
 
     /**
      *  Converts the contents of a file to a ValueMap.
@@ -397,7 +385,7 @@ public:
     /**
      *  Set resource encrypt Sign and key.
      */
-    virtual void setResourceEncryptKeyAndSign(const std::string& key, const std::string& sign);
+    void setFileDataDecoder(FiledataDecoder decoder);
 
     /** Returns the full path cache */
     const std::unordered_map<std::string, std::string>& getFullPathCache() const { return _fullPathCache; }
@@ -516,20 +504,12 @@ protected:
     std::string _writablePath;
     
     /**
-     * Resource encrypt Sign
-     */
-    std::string _xxteaSign;
-    
-    /**
-     * Resource encrypt Key
-     */
-    std::string _xxteaKey;
-    
-    /**
      *  The singleton pointer of FileUtils.
      */
     static FileUtils* s_sharedFileUtils;
     
+    /* xxtea or other decoder */
+    FiledataDecoder dataDecoder;
 };
 
 // end of platform group

@@ -57,6 +57,10 @@ void SpriteFrameCacheHelper::retainSpriteFrames(const std::string &plistPath)
 
     std::string fullPath = FileUtils::getInstance()->fullPathForFilename(plistPath);
     ValueMap dict = FileUtils::getInstance()->getValueMapFromFile(fullPath);
+    if (dict.find("frames") == dict.end()) {
+        return;
+    }
+    
     auto spriteFramesCache = SpriteFrameCache::getInstance();
     ValueMap& framesDict = dict["frames"].asValueMap();
 
@@ -105,6 +109,12 @@ SpriteFrameCacheHelper::SpriteFrameCacheHelper()
 
 SpriteFrameCacheHelper::~SpriteFrameCacheHelper()
 {
+    auto i = _usingSpriteFrames.begin();
+    while (i != _usingSpriteFrames.end())
+    {
+        auto j = i++;
+        removeSpriteFrameFromFile(j->first);
+    }
 }
 
 }

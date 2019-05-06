@@ -93,21 +93,10 @@ public:
 
     /**
      * Scale animation play speed.
-     * This method is deprecated, please use setSpeedScale.
-     * @param animationScale Scale value
-     */
-    CC_DEPRECATED_ATTRIBUTE virtual void setAnimationScale(float animationScale);
-    CC_DEPRECATED_ATTRIBUTE virtual float getAnimationScale() const;
-
-    /**
-     * Scale animation play speed.
      * @param animationScale Scale value
      */
     virtual void setSpeedScale(float speedScale);
     virtual float getSpeedScale() const;
-
-    //! The animation update speed
-    CC_DEPRECATED_ATTRIBUTE virtual void setAnimationInternal(float animationInternal) {}
 
     using ProcessBase::play;
     /**
@@ -126,12 +115,6 @@ public:
      */
     virtual void play(const std::string& animationName, int durationTo = -1,  int loop = -1);
 
-    /**
-     * Play animation by index, the other param is the same to play.
-     * @deprecated, please use playWithIndex
-     * @param  animationIndex  the animation index you want to play
-     */
-    CC_DEPRECATED_ATTRIBUTE virtual void playByIndex(int animationIndex,  int durationTo = -1, int loop = -1);
     virtual void playWithIndex(int animationIndex,  int durationTo = -1, int loop = -1);
 
     virtual void playWithNames(const std::vector<std::string>& movementNames, int durationTo = -1, bool loop = true);
@@ -157,15 +140,15 @@ public:
     /**
      * Pause the Process
      */
-    virtual void pause();
+    virtual void pause() override;
     /**
      * Resume the Process
      */
-    virtual void resume();
+    virtual void resume() override;
     /**
      * Stop the Process
      */
-    virtual void stop();
+    virtual void stop() override;
 
 
     /**
@@ -173,25 +156,13 @@ public:
      */
     ssize_t getMovementCount() const;
 
-    void update(float dt);
+    virtual void update(float dt) override;
 
     /**
      * Get current movementID
      * @return The name of current movement
      */
     std::string getCurrentMovementID() const;
-
-    /**
-     * Set armature's movement event callback function
-     * To disconnect this event, just setMovementEventCallFunc(nullptr, nullptr);
-     */
-    CC_DEPRECATED_ATTRIBUTE void setMovementEventCallFunc(cocos2d::Ref *target, SEL_MovementEventCallFunc callFunc);
-
-    /**
-     * Set armature's frame event callback function
-     * To disconnect this event, just setFrameEventCallFunc(nullptr, nullptr);
-     */
-    CC_DEPRECATED_ATTRIBUTE void setFrameEventCallFunc(cocos2d::Ref *target, SEL_FrameEventCallFunc callFunc);
     
     void setMovementEventCallFunc(std::function<void(Armature *armature, MovementEventType movementType, const std::string& movementID)> listener);
     void setFrameEventCallFunc(std::function<void(Bone *bone, const std::string& frameEventName, int originFrameIndex, int currentFrameIndex)> listener);
@@ -229,8 +200,8 @@ public:
      *
      * Similar to UserData, but instead of holding a void* it holds an object.
      * The UserObject will be retained once in this method,
-     * and the previous UserObject (if existed) will be relese.
-     * The UserObject will be released in Node's destructure.
+     * and the previous UserObject (if existed) will be release.
+     * The UserObject will be released in Node's destructor.
      *
      * @param userObject    A user assigned Object
      */
@@ -242,7 +213,7 @@ protected:
      * @js NA
      * @lua NA
      */
-    void updateHandler();
+    void updateHandler() override;
 
     /**
      * Update current key frame, and process auto stop, pause
@@ -275,13 +246,13 @@ protected:
     //! Scale the animation speed
     float _speedScale;
 
-    MovementData *_movementData;				//! MovementData save all MovementFrameDatas this animation used.
+    MovementData *_movementData;                //! MovementData save all MovementFrameDatas this animation used.
 
-    Armature *_armature;						//! A weak reference of armature
+    Armature *_armature;                        //! A weak reference of armature
 
-    std::string _movementID;				//! Current movment's name
+    std::string _movementID;                //! Current movment's name
 
-    int _toIndex;								//! The frame index in MovementData->m_pMovFrameDataArr, it's different from m_iFrameIndex.
+    int _toIndex;                                //! The frame index in MovementData->m_pMovFrameDataArr, it's different from m_iFrameIndex.
 
     cocos2d::Vector<Tween*> _tweenList;
 
@@ -299,27 +270,6 @@ protected:
 
     cocos2d::Ref *_userObject;
 protected:
-    /**
-     * MovementEvent CallFunc.
-     * @param Armature* a Armature
-     * @param MovementEventType, Event Type, like START, COMPLETE.
-     * @param const char*, Movement ID, also called Movement Name
-     */
-    SEL_MovementEventCallFunc _movementEventCallFunc;
-
-    /**
-     * FrameEvent CallFunc.
-     * @param Bone*, a Bone
-     * @param const char*, the name of this frame event
-     * @param int, origin frame index
-     * @param int, current frame index, animation may be delayed
-     */
-    SEL_FrameEventCallFunc _frameEventCallFunc;
-
-
-    cocos2d::Ref *_movementEventTarget;
-    cocos2d::Ref *_frameEventTarget;
-    
     
     std::function<void(Armature *armature, MovementEventType movementType, const std::string& movementID)> _movementEventListener;
     std::function<void(Bone *bone, const std::string& frameEventName, int originFrameIndex, int currentFrameIndex)> _frameEventListener;
